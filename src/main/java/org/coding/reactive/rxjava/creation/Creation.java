@@ -13,7 +13,7 @@ public class Creation {
         subscribePrint(Observable.interval(500L, TimeUnit.MILLISECONDS),
                 "Interval Observable");
 
-        subscribePrint(Observable.timer(0L, 1L, TimeUnit.SECONDS),
+        subscribePrint(Observable.interval(0L, 1L, TimeUnit.SECONDS),
                 "Timed Interval Observable");
 
         subscribePrint(Observable.timer(1L, TimeUnit.SECONDS),
