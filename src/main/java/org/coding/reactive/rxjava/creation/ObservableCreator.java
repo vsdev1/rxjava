@@ -43,6 +43,10 @@ public class ObservableCreator {
 
     }
 
+    public Observable<Character> getJustObservable() {
+        return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
+    }
+
     public Observable<Integer> getRangeObservable() {
 //        return Observable.empty();
         return Observable.range(5, 10);
