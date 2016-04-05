@@ -47,8 +47,12 @@ public class ObservableCreator {
         return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
     }
 
-    public Observable<String> getFromObservable() {
+    public Observable<String> getObservableFromList() {
         return  Observable.from(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    }
+
+    public Observable<Integer> getObservableFromArray() {
+        return Observable.from(new Integer[] {3, 5, 8});
     }
 
     public Observable<Integer> getRangeObservable() {
