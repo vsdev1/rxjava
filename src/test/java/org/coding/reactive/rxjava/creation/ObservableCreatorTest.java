@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import rx.Observable;
 
-public class ObservableCreationTest {
+public class ObservableCreatorTest {
     private ObservableCreator observableCreator;
 
     @Before
