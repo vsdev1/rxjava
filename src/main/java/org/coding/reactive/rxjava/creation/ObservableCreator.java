@@ -1,6 +1,7 @@
 package org.coding.reactive.rxjava.creation;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.functions.Action1;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class ObservableCreator {
@@ -43,28 +45,58 @@ public class ObservableCreator {
 
     }
 
-    public Observable<Character> getJustObservable() {
+    public Observable<Character> createJustObservable() {
         return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
     }
 
-    public Observable<String> getObservableFromList() {
-        return  Observable.from(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    public Observable<String> createObservableFromList() {
+        return Observable.from(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
-    public Observable<Integer> getObservableFromArray() {
+    public Observable<Integer> createObservableFromArray() {
         return Observable.from(new Integer[] {3, 5, 8});
     }
 
-    public Observable<Path> getObservableFromIterableDirectoryStream() throws IOException {
+    public Observable<Path> createObservableFromIterableDirectoryStream() throws IOException {
         Path resources = Paths.get("src", "main", "resources");
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resources);
 
         return Observable.from(directoryStream);
     }
 
+    public Observable<String> createObservableWithCreateOperator() throws IOException {
+        return createObservableFromIterable(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    }
 
-    public Observable<Integer> getRangeObservable() {
+    public Observable<Integer> createRangeObservable() {
 //        return Observable.empty();
         return Observable.range(5, 10);
     }
+
+    private <T> Observable<T> createObservableFromIterable(Iterable<T> iterable) throws IOException {
+        return Observable.create(new Observable.OnSubscribe<T>() {
+            @Override
+            public void call(Subscriber<? super T> subscriber) {
+                try {
+                    Iterator<T> iterator = iterable.iterator();
+
+                    while (iterator.hasNext()) {
+                        if (subscriber.isUnsubscribed()) {
+                            return;
+                        }
+                        subscriber.onNext(iterator.next());
+                    }
+
+                    if (!subscriber.isUnsubscribed()) {
+                        subscriber.onCompleted();
+                    }
+                } catch (Exception e) {
+                    if (!subscriber.isUnsubscribed()) {
+                        subscriber.onError(e);
+                    }
+                }
+            }
+        });
+    }
+
 }
