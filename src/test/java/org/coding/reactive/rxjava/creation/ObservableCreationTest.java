@@ -23,16 +23,23 @@ public class ObservableCreationTest {
     }
 
     @Test
-    public void shouldReturnJustObservable() throws Exception {
-        final Observable<Character> rangeObservable = observableCreator.getJustObservable();
+    public void shouldCreateObservableWithJustOperator() throws Exception {
+        final Observable<Character> observable = observableCreator.getJustObservable();
 
-        assertThat(rangeObservable.toList().toBlocking().single(), contains('R', 'x', 'J', 'a', 'v', 'a'));
+        assertThat(observable.toList().toBlocking().single(), contains('R', 'x', 'J', 'a', 'v', 'a'));
     }
 
     @Test
-    public void shouldReturnRangeObservable() throws Exception {
-        final Observable<Integer> rangeObservable = observableCreator.getRangeObservable();
+    public void shouldCreateObservableFromList() throws Exception {
+        final Observable<String> rangeObservable = observableCreator.getFromObservable();
 
-        assertThat(rangeObservable.toList().toBlocking().single(), contains(5, 6, 7, 8, 9, 10, 11, 12, 13, 14));
+        assertThat(rangeObservable.toList().toBlocking().single(), contains("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    }
+
+    @Test
+    public void shouldCreateObservableWithRangeOperator() throws Exception {
+        final Observable<Integer> observable = observableCreator.getRangeObservable();
+
+        assertThat(observable.toList().toBlocking().single(), contains(5, 6, 7, 8, 9, 10, 11, 12, 13, 14));
     }
 }
