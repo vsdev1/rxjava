@@ -9,9 +9,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.apache.http.ObservableHttp;
 
 public class ObservableCreator {
 
@@ -45,6 +48,19 @@ public class ObservableCreator {
 
     public Observable<String> createObservableWithCreateOperator() throws IOException {
         return createObservableFromIterable(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    }
+
+    public Observable<String> createHttpGetObservable(String url) throws IOException {
+        CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
+        client.start();
+
+        return ObservableHttp.createGet(url, client)
+                .toObservable()
+                .flatMap(resp -> resp.getContent()
+                        .map(bytes -> new String(bytes, java.nio.charset.StandardCharsets.UTF_8)))
+                .retry(5)
+                .cast(String.class)
+                .map(String::trim);
     }
 
     private <T> Observable<T> createObservableFromIterable(Iterable<T> iterable) throws IOException {

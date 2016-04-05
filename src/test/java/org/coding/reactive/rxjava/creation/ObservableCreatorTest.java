@@ -7,9 +7,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -17,6 +20,9 @@ import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
 
 public class ObservableCreatorTest {
+
+    static final Logger LOG = LoggerFactory.getLogger(ObservableCreatorTest.class);
+
     private ObservableCreator observableCreator;
 
     @Before
@@ -70,9 +76,9 @@ public class ObservableCreatorTest {
     @Test
     public void shouldCreateObservableWithIntervalOperator() throws Exception {
         TestScheduler testScheduler = Schedulers.test();
-        Observable<Long> interval = observableCreator.createObservableWithIntervalOperator(testScheduler);
+        Observable<Long> observable = observableCreator.createObservableWithIntervalOperator(testScheduler);
         TestSubscriber<Long> subscriber = new TestSubscriber<>();
-        interval.subscribe(subscriber);
+        observable.subscribe(subscriber);
 
         assertThat(subscriber.getOnNextEvents(), is(empty()));
 
@@ -86,4 +92,14 @@ public class ObservableCreatorTest {
         assertThat(subscriber.getOnNextEvents(), contains(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L));
     }
 
+    @Test
+    @Ignore
+    // temporarily ignored because the jsonplaceholder api is currently down
+    public void shouldCreateHttpGetObservable() throws Exception {
+        Observable<String> observable = observableCreator.createHttpGetObservable("http://jsonplaceholder.typicode.com/posts/1");
+
+        final String response = observable.toBlocking().single();
+        LOG.info("http response: {}", response);
+        JSONAssert.assertEquals("{userId:1, id: 1}", response, false);
+    }
 }
