@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -30,6 +31,10 @@ public class ObservableCreator {
         return Observable.from(new Integer[] {3, 5, 8});
     }
 
+    public Observable<Integer> createObservableFromStream() {
+        return createObservableFromStream(Stream.of(3, 5, 8));
+    }
+
     public Observable<Path> createObservableFromIterableDirectoryStream() throws IOException {
         Path resources = Paths.get("src", "main", "resources");
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resources);
@@ -47,7 +52,7 @@ public class ObservableCreator {
     }
 
     public Observable<String> createObservableWithCreateOperator() throws IOException {
-        return createObservableFromIterable(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+        return createObservableFromIterableWithCreateOperator(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     public Observable<String> createHttpGetObservable(String url) throws IOException {
@@ -63,7 +68,11 @@ public class ObservableCreator {
                 .map(String::trim);
     }
 
-    private <T> Observable<T> createObservableFromIterable(Iterable<T> iterable) throws IOException {
+    private <T> Observable<T> createObservableFromStream(Stream<T> stream) {
+        return Observable.from(stream::iterator);
+    }
+
+    private <T> Observable<T> createObservableFromIterableWithCreateOperator(Iterable<T> iterable) throws IOException {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(Subscriber<? super T> subscriber) {

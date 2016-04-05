@@ -52,6 +52,13 @@ public class ObservableCreatorTest {
     }
 
     @Test
+    public void shouldCreateObservableFromStream() throws Exception {
+        final Observable<Integer> observable = observableCreator.createObservableFromStream();
+
+        assertThat(observable.toList().toBlocking().single(), contains(3, 5, 8));
+    }
+
+    @Test
     public void shouldCreateObservableFromIterableDirectoryStream() throws Exception {
         final Observable<Path> observable = observableCreator.createObservableFromIterableDirectoryStream();
 
