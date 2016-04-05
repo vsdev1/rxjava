@@ -31,16 +31,16 @@ public class ObservableCreatorTest {
 
     @Test
     public void shouldCreateObservableFromList() throws Exception {
-        final Observable<String> rangeObservable = observableCreator.getObservableFromList();
+        final Observable<String> observable = observableCreator.getObservableFromList();
 
-        assertThat(rangeObservable.toList().toBlocking().single(), contains("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+        assertThat(observable.toList().toBlocking().single(), contains("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     @Test
     public void shouldCreateObservableFromArray() throws Exception {
-        final Observable<Integer> rangeObservable = observableCreator.getObservableFromArray();
+        final Observable<Integer> observable = observableCreator.getObservableFromArray();
 
-        assertThat(rangeObservable.toList().toBlocking().single(), contains(3, 5, 8));
+        assertThat(observable.toList().toBlocking().single(), contains(3, 5, 8));
     }
 
     @Test
