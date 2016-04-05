@@ -55,6 +55,14 @@ public class ObservableCreator {
         return Observable.from(new Integer[] {3, 5, 8});
     }
 
+    public Observable<Path> getObservableFromIterableDirectoryStream() throws IOException {
+        Path resources = Paths.get("src", "main", "resources");
+        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resources);
+
+        return Observable.from(directoryStream);
+    }
+
+
     public Observable<Integer> getRangeObservable() {
 //        return Observable.empty();
         return Observable.range(5, 10);

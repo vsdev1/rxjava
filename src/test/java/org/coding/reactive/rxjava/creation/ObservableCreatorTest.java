@@ -2,12 +2,17 @@ package org.coding.reactive.rxjava.creation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import rx.Observable;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public class ObservableCreatorTest {
     private ObservableCreator observableCreator;
@@ -41,6 +46,14 @@ public class ObservableCreatorTest {
         final Observable<Integer> observable = observableCreator.getObservableFromArray();
 
         assertThat(observable.toList().toBlocking().single(), contains(3, 5, 8));
+    }
+
+    @Test
+    public void shouldCreateObservableFromIterableDirectoryStream() throws Exception {
+        final Observable<Path> observable = observableCreator.getObservableFromIterableDirectoryStream();
+
+        final List<Path> single = observable.toList().toBlocking().single();
+        assertThat(single.get(0).toString(), is(equalTo("src/main/resources/empty.properties")));
     }
 
     @Test
