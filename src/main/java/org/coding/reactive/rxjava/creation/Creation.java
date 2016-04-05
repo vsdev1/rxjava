@@ -8,8 +8,6 @@ import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
 
 public class Creation {
     public static void main(String[] args) {
-        Observable.just('R', 'x', 'J', 'a', 'v', 'a').subscribe(System.out::println);
-
         subscribePrint(Observable.interval(500L, TimeUnit.MILLISECONDS),
                 "Interval Observable");
 

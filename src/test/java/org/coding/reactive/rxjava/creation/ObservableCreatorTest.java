@@ -1,18 +1,20 @@
 package org.coding.reactive.rxjava.creation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import rx.Observable;
-
-import java.nio.file.Path;
-import java.util.List;
+import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 
 public class ObservableCreatorTest {
     private ObservableCreator observableCreator;
@@ -20,11 +22,6 @@ public class ObservableCreatorTest {
     @Before
     public void setUp() throws Exception {
         observableCreator = new ObservableCreator();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
     }
 
     @Test
@@ -68,6 +65,25 @@ public class ObservableCreatorTest {
         final Observable<String> observable = observableCreator.createObservableWithCreateOperator();
 
         assertThat(observable.toList().toBlocking().single(), contains("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
+    }
+
+    @Test
+    public void shouldCreateObservableWithIntervalOperator() throws Exception {
+        TestScheduler testScheduler = Schedulers.test();
+        Observable<Long> interval = observableCreator.createObservableWithIntervalOperator(testScheduler);
+        TestSubscriber<Long> subscriber = new TestSubscriber<>();
+        interval.subscribe(subscriber);
+
+        assertThat(subscriber.getOnNextEvents(), is(empty()));
+
+        testScheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
+        assertThat(subscriber.getOnNextEvents(), contains(0L));
+
+        testScheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
+        assertThat(subscriber.getOnNextEvents(), contains(0L, 1L));
+
+        testScheduler.advanceTimeTo(1L, TimeUnit.SECONDS);
+        assertThat(subscriber.getOnNextEvents(), contains(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L));
     }
 
 }
