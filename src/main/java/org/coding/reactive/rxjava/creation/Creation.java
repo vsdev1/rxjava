@@ -4,6 +4,6 @@ import rx.Observable;
 
 public class Creation {
     public static void main(String[] args) {
-        Observable.just('S').subscribe(System.out::println);
+        Observable.just('R', 'x', 'J', 'a', 'v', 'a').subscribe(System.out::println);
     }
 }
