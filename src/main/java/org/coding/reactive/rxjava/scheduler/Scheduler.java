@@ -8,7 +8,7 @@ import static org.coding.reactive.rxjava.common.Utils.debugNotifications;
 import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
 
 /**
- * Created by svante.kumlien on 06.04.16.
+ *
  */
 public class Scheduler {
 
@@ -77,4 +77,5 @@ public class Scheduler {
                 .subscribe();
         sleep(2500);
     }
+
 }
