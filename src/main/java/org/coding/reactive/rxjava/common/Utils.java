@@ -1,10 +1,13 @@
 package org.coding.reactive.rxjava.common;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
+import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
+import rx.functions.Action1;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public final class Utils {
 
@@ -22,5 +25,44 @@ public final class Utils {
 							);
 				}, () -> System.out.println(name + " ended!"));
 	}
+
+    /**
+     * Util method used to debug thread name and value for notifications from an {@link Observable}
+     *
+     * @param description
+     * @param offset
+     * @param <T>
+     * @return A lambda logging all notifications using the specified description.
+     */
+    public static <T> Action1<Notification<? super T>> debug( String description, String offset) {
+        AtomicReference<String> nextOffset = new AtomicReference<String>(">");
+        return (Notification<? super T> notification) -> {
+            switch (notification.getKind()) {
+                case OnNext:
+                    System.out.println(
+                            Thread.currentThread().getName() +
+                                    "|" + description + ": " + offset +
+                                    nextOffset.get() + notification.getValue()
+                    );
+                    break;
+                case OnError:
+                    System.err.println(
+                            Thread.currentThread().getName() +
+                                    "|" + description + ": " + offset +
+                                    nextOffset.get() + " X " + notification.getThrowable()
+                    );
+                    break;
+                case OnCompleted:
+                    System.out.println(
+                            Thread.currentThread().getName() +
+                                    "|" + description + ": " + offset +
+                                    nextOffset.get() + "|"
+                    );
+                default:
+                    break;
+            }
+            nextOffset.getAndUpdate(p -> "-" + p);
+        };
+    }
 
 }
