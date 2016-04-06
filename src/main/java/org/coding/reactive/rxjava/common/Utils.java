@@ -23,18 +23,18 @@ public final class Utils {
 							.map(stackEl -> "  " + stackEl)
 							.collect(Collectors.joining("\n"))
 							);
-				}, () -> System.out.println(name + " ended!"));
+				}, () -> System.out.println(Thread.currentThread().getName() + "|" + name + " ended!"));
 	}
 
     /**
-     * Util method used to debug thread name and value for notifications from an {@link Observable}
+     * Util method used to debugNotifications thread name and value for notifications from an {@link Observable}
      *
      * @param description
      * @param offset
      * @param <T>
      * @return A lambda logging all notifications using the specified description.
      */
-    public static <T> Action1<Notification<? super T>> debug( String description, String offset) {
+    public static <T> Action1<Notification<? super T>> debugNotifications(String description, String offset) {
         AtomicReference<String> nextOffset = new AtomicReference<String>(">");
         return (Notification<? super T> notification) -> {
             switch (notification.getKind()) {
@@ -63,6 +63,10 @@ public final class Utils {
             }
             nextOffset.getAndUpdate(p -> "-" + p);
         };
+    }
+
+    public static <T> Action1<Notification<? super T>> debugNotifications(String description) {
+        return debugNotifications(description, "");
     }
 
 }
