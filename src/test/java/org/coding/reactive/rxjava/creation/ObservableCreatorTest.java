@@ -82,20 +82,20 @@ public class ObservableCreatorTest {
 
     @Test
     public void shouldCreateObservableWithIntervalOperator() throws Exception {
-        TestScheduler testScheduler = Schedulers.test();
-        Observable<Long> observable = observableCreator.createObservableWithIntervalOperator(testScheduler);
+        TestScheduler scheduler = Schedulers.test();
+        Observable<Long> observable = observableCreator.createObservableWithIntervalOperator(scheduler);
         TestSubscriber<Long> subscriber = new TestSubscriber<>();
         observable.subscribe(subscriber);
 
         assertThat(subscriber.getOnNextEvents(), is(empty()));
 
-        testScheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
+        scheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
         assertThat(subscriber.getOnNextEvents(), contains(0L));
 
-        testScheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
+        scheduler.advanceTimeBy(101L, TimeUnit.MILLISECONDS);
         assertThat(subscriber.getOnNextEvents(), contains(0L, 1L));
 
-        testScheduler.advanceTimeTo(1L, TimeUnit.SECONDS);
+        scheduler.advanceTimeTo(1L, TimeUnit.SECONDS);
         assertThat(subscriber.getOnNextEvents(), contains(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L));
     }
 
