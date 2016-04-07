@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.coding.reactive.rxjava.bestprice.model.Currency;
+import rx.Observable;
 
 public class ExchangeRateService {
 
@@ -25,9 +26,9 @@ public class ExchangeRateService {
         EXCHANGE_RATES.put(Currency.MXN, .07683);
     }
 
-    public static double getRate(Currency from, Currency to) {
+    public static Observable<Double> getRate(Currency from, Currency to) {
         LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
         Util.delay(SERVICE_DELAY_MS);
-        return EXCHANGE_RATES.get(from) / EXCHANGE_RATES.get(to);
+        return Observable.just(EXCHANGE_RATES.get(from) / EXCHANGE_RATES.get(to));
     }
 }

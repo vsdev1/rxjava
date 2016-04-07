@@ -9,6 +9,7 @@ import org.coding.reactive.rxjava.bestprice.model.Offer;
 import org.coding.reactive.rxjava.bestprice.model.Shop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 public class OfferService {
 
@@ -52,25 +53,26 @@ public class OfferService {
         offerStore.get(shop.getName()).put(productName, new Offer(shop.getName(), productName, price, shop.getCurrency(), shop.getDiscount(), false));
     }
 
-    public static Offer getOfferNullable(Shop shop, String productName) {
+    public static Observable<Offer> getOfferNullable(Shop shop, String productName) {
         LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
         Util.delay(SERVICE_DELAY_MS);
-        return offerStore.get(shop.getName()).get(productName);
+
+        return Observable.just(offerStore.get(shop.getName()).get(productName));
     }
 
-    public static Offer getOfferWithException(Shop shop, String productName) throws NotFoundException {
+    public static Observable<Offer> getOfferWithException(Shop shop, String productName) throws NotFoundException {
         LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
         Util.delay(SERVICE_DELAY_MS);
         Offer offer = offerStore.get(shop.getName()).get(productName);
         if (offer == null) {
             throw new NotFoundException("No offer for shop " + shop + " and product '" + productName + "'");
         }
-        return offer;
+        return Observable.just(offer);
     }
 
-    public static Optional<Offer> getOptionalOffer(Shop shop, String productName) {
-        LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
-        Util.delay(SERVICE_DELAY_MS);
-        return Optional.ofNullable(offerStore.get(shop.getName()).get(productName));
-    }
+//    public static Optional<Offer> getOptionalOffer(Shop shop, String productName) {
+//        LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
+//        Util.delay(SERVICE_DELAY_MS);
+//        return Optional.ofNullable(offerStore.get(shop.getName()).get(productName));
+//    }
 }

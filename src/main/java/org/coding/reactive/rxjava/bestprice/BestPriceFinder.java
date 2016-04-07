@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.coding.reactive.rxjava.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,47 +25,93 @@ public class BestPriceFinder {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+    /**
+     * @param shop
+     *            shop
+     * @param product
+     *            product name
+     * @return discounted price for product offered by shop, in shop's currency
+     * @throws Exception
+     *             when interrupted waiting for/retrieving async results or on async exceptions
+     */
     public Double getDiscountedPriceNullable(final Shop shop, final String product) throws InterruptedException, ExecutionException {
-        final Observable<Offer> offerObservable = Observable.just(OfferService.getOfferNullable(shop, product))
+        final Observable<Offer> offerObservable = OfferService.getOfferNullable(shop, product)
                 .filter(offer -> offer != null)
-                .map(DiscountService::applyDiscount);
+                .flatMap(DiscountService::applyDiscount);
 
-        return offerObservable.toBlocking().first().getPrice();
-//
-//
-//        final CompletableFuture<Offer> offerCompletableFuture = getOfferNullableAsync(shop, product)
-//                .thenApply(offer -> Optional.ofNullable(offer).map(DiscountService::applyDiscount).orElse(null));
-//
-//        return Optional.ofNullable(offerCompletableFuture.get()).map(Offer::getPrice).orElse(null);
-//
-//        shop.getDiscount()
-//        // TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        // using getOfferNullableAsync(shop, product) and DiscountService::applyDiscount
+        return Optional.ofNullable(offerObservable.toBlocking().single()).map(Offer::getPrice).orElse(null);
+          // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
 //        return 0.0;
     }
 
+    /**
+     * @param shop
+     *            shop
+     * @param product
+     *            product name
+     * @return discounted price for product offered by shop or fallback, in shop's currency
+     * @throws NotFoundException
+     *             if no offer for product in any shop
+     * @throws Exception
+     *             when interrupted waiting for/retrieving async results or on async exceptions
+     */
     public Double getDiscountedPriceWithException(Shop shop, String product) throws InterruptedException, ExecutionException {
-        // TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        // using getOfferWithExceptionAsync() and DiscountService::applyDiscount
+        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
         return 0.0;
     }
 
+    /**
+     * @param product
+     *            product name
+     * @param targetCurrency
+     *            target currency
+     * @return list of offers with discounted prices in target currency
+     * @throws Exception
+     *             when interrupted waiting for/retrieving async results or on async exceptions
+     */
     public List<Offer> findOffers(String product, Currency targetCurrency) throws InterruptedException, ExecutionException {
-        // TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        // using getOfferNullableAsync(shop, product) and applyDiscountAsync() and getRateAsync()
+        final Observable<Offer> offersObservable = Observable.from(Shop.SHOPS)
+                .flatMap(shop -> OfferService.getOfferNullable(shop, product))
+                .filter(offer -> offer != null)
+                .flatMap(offer -> DiscountService.applyDiscount(offer));
+
+        Utils.subscribePrint(offersObservable, "Offers Observable");
+
+        final Observable<Double> exchangeRateObservable = Observable.from(Shop.SHOPS)
+                .flatMap(shop -> ExchangeRateService.getRate(shop.getCurrency(), targetCurrency));
+
+        Utils.subscribePrint(exchangeRateObservable, "ExchangeRate Observable");
+
+//        offersObservable.flatMap(offer -> exchangeRateObservable)
+//
+//        offersObservable.ambWith()
+
+        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
         return null;
     }
 
+    public static void main(String[] args) throws Exception {
+        new BestPriceFinder().findOffers("Samsung S6", Currency.EUR);
+    }
+
+    /**
+     * @param product
+     *            product name
+     * @param targetCurrency
+     *            target currency
+     * @return average discounted price for the product in USD.
+     * @throws Exception
+     *             when interrupted waiting for/retrieving async results or on async exceptions
+     */
     public Double getAveragePriceNullable(String product, Currency targetCurrency) throws Exception {
-        // TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        // using getOfferNullableAsync(shop, product) and applyDiscountAsync() and getRateAsync()
+        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
         return 0.0;
     }
 
-    private CompletableFuture<Offer> getOfferNullableAsync(Shop shop, String product) {
-        return CompletableFuture.supplyAsync(() -> OfferService.getOfferNullable(shop, product), executorService);
-    }
-
+//    private CompletableFuture<Offer> getOfferNullableAsync(Shop shop, String product) {
+//        return CompletableFuture.supplyAsync(() -> OfferService.getOfferNullable(shop, product), executorService);
+//    }
+//
 //    private CompletableFuture<Offer> getOfferWithExceptionAsync(Shop shop, String product) {
 //        return CompletableFuture.supplyAsync(() -> OfferService.getOfferWithException(shop, product), executorService);
 //    }

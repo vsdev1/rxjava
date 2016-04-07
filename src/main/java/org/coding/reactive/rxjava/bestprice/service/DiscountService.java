@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import org.coding.reactive.rxjava.bestprice.model.DiscountCode;
 import org.coding.reactive.rxjava.bestprice.model.Offer;
+import rx.Observable;
 
 public class DiscountService {
 
@@ -27,13 +28,13 @@ public class DiscountService {
         DISCOUNTS.put(DIAMOND, 20);
     }
 
-    public static Offer applyDiscount(Offer offer) {
+    public static Observable<Offer> applyDiscount(Offer offer) {
 
         LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
         Util.delay(SERVICE_DELAY_MS);
-        return offer.withDiscountedPrice(
+        return Observable.just(offer.withDiscountedPrice(
                 offer.isDiscountApplied()
                         ? offer.getPrice()
-                        : Util.roundTo2DecimalPlaces(offer.getPrice() * (100 - DISCOUNTS.get(offer.getDiscountCode())) / 100));
+                        : Util.roundTo2DecimalPlaces(offer.getPrice() * (100 - DISCOUNTS.get(offer.getDiscountCode())) / 100)));
     }
 }
