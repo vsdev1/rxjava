@@ -100,8 +100,6 @@ public class ObservableCreatorTest {
     }
 
     @Test
-    @Ignore
-    // temporarily ignored because the jsonplaceholder api is currently down
     public void shouldCreateHttpGetObservable() throws Exception {
         Observable<String> observable = observableCreator.createHttpGetObservable("http://jsonplaceholder.typicode.com/posts/1");
 
