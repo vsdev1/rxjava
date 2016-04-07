@@ -1,37 +1,19 @@
 package org.coding.reactive.rxjava.bestprice;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import org.coding.reactive.rxjava.bestprice.service.NotFoundException;
-import org.coding.reactive.rxjava.common.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.coding.reactive.rxjava.bestprice.model.Currency;
 import org.coding.reactive.rxjava.bestprice.model.Offer;
 import org.coding.reactive.rxjava.bestprice.model.Shop;
-import org.coding.reactive.rxjava.bestprice.service.DiscountService;
-import org.coding.reactive.rxjava.bestprice.service.ExchangeRateService;
-import org.coding.reactive.rxjava.bestprice.service.OfferService;
+import org.coding.reactive.rxjava.bestprice.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.Subscription;
-import rx.observables.BlockingObservable;
-import rx.observers.TestSubscriber;
-import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class BestPriceFinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(BestPriceFinder.class);
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     /**
      * @param shop
@@ -39,15 +21,13 @@ public class BestPriceFinder {
      * @param product
      *            product name
      * @return discounted price for product offered by shop, in shop's currency
-     * @throws Exception
-     *             when interrupted waiting for/retrieving async results or on async exceptions
+     *          or an empty observable if no offer was found for the product in the given shop
      */
-    public Observable<Double> getDiscountedPriceNullable(final Shop shop, final String product) throws InterruptedException, ExecutionException {
+    public Observable<Double> getDiscountedPriceNullable(final Shop shop, final String product) {
          return OfferService.getOfferNullable(shop, product)
-                .filter(offer -> offer != null)
-                .defaultIfEmpty(null)
-                .flatMap(DiscountService::applyDiscount)
-                .map(Offer::getPrice);
+               .filter(offer -> offer != null)
+               .flatMap(DiscountService::applyDiscount)
+               .map(Offer::getPrice);
 //          // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
 //        return Observable.empty();
     }
@@ -60,10 +40,8 @@ public class BestPriceFinder {
      * @return discounted price for product offered by shop or fallback, in shop's currency
      * @throws NotFoundException
      *             if no offer for product in the shop
-     * @throws Exception
-     *             when interrupted waiting for/retrieving async results or on async exceptions
      */
-    public Observable<Double> getDiscountedPriceWithException(Shop shop, String product) throws InterruptedException, ExecutionException {
+    public Observable<Double> getDiscountedPriceWithException(Shop shop, String product) {
         return OfferService.getOfferWithException(shop, product)
                 .flatMap(DiscountService::applyDiscount)
                 .map(Offer::getPrice);
@@ -77,28 +55,25 @@ public class BestPriceFinder {
      * @param targetCurrency
      *            target currency
      * @return list of offers with discounted prices in target currency
-     * @throws Exception
-     *             when interrupted waiting for/retrieving async results or on async exceptions
      */
-    public List<Offer> findOffers(String product, Currency targetCurrency) throws InterruptedException, ExecutionException {
-        final Observable<Offer> offersObservable = Observable.from(Shop.SHOPS)
-                .flatMap(shop -> OfferService.getOfferNullable(shop, product))
-                .filter(offer -> offer != null)
-                .flatMap(offer -> DiscountService.applyDiscount(offer));
-
-        Utils.subscribePrint(offersObservable, "Offers Observable");
-
-        final Observable<Double> exchangeRateObservable = Observable.from(Shop.SHOPS)
-                .flatMap(shop -> ExchangeRateService.getRate(shop.getCurrency(), targetCurrency));
-
-        Utils.subscribePrint(exchangeRateObservable, "ExchangeRate Observable");
-
-//        offersObservable.flatMap(offer -> exchangeRateObservable)
-//
-//        offersObservable.ambWith()
-
+    public Observable<Offer> findOffers(String product, Currency targetCurrency) {
+        return Observable.from(Shop.SHOPS)
+                .flatMap(shop -> getOfferWithExchangeRatePrice(product, shop, targetCurrency));
         // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        return null;
+//        return Observable.empty();
+    }
+
+    private Observable<Offer> getOfferWithExchangeRatePrice(String product, Shop shop, Currency targetCurrency) {
+        Observable<Offer> offerObservable = OfferService.getOfferNullable(shop, product)
+                .filter(offer -> offer != null)
+                .defaultIfEmpty(null)
+                .flatMap(DiscountService::applyDiscount);
+
+        Observable<Double> exchangeRateObservable = ExchangeRateService.getRate(shop.getCurrency(), targetCurrency);
+
+        return Observable.combineLatest(offerObservable, exchangeRateObservable,
+                (offer, exchangeRate) ->
+                        offer.withNewPriceAndCurrency(Util.roundTo2DecimalPlaces(offer.getPrice() * exchangeRate), targetCurrency));
     }
 
     public static void main(String[] args) throws Exception {
@@ -118,20 +93,4 @@ public class BestPriceFinder {
         // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
         return 0.0;
     }
-
-//    private CompletableFuture<Offer> getOfferNullableAsync(Shop shop, String product) {
-//        return CompletableFuture.supplyAsync(() -> OfferService.getOfferNullable(shop, product), executorService);
-//    }
-//
-//    private CompletableFuture<Offer> getOfferWithExceptionAsync(Shop shop, String product) {
-//        return CompletableFuture.supplyAsync(() -> OfferService.getOfferWithException(shop, product), executorService);
-//    }
-//
-//    private CompletableFuture<Offer> applyDiscountAsync(Offer offer) {
-//        return CompletableFuture.supplyAsync(() -> DiscountService.applyDiscount(offer), executorService);
-//    }
-//
-//    private CompletableFuture<Double> getRateAsync(Currency from, Currency to) {
-//        return CompletableFuture.supplyAsync(() -> ExchangeRateService.getRate(from, to), executorService);
-//    }
 }

@@ -32,6 +32,10 @@ public class DiscountService {
 
         LOG.info("Delaying {}ms", SERVICE_DELAY_MS);
         Util.delay(SERVICE_DELAY_MS);
+        if (offer == null) {
+            return Observable.empty();
+        }
+
         return Observable.just(offer.withDiscountedPrice(
                 offer.isDiscountApplied()
                         ? offer.getPrice()

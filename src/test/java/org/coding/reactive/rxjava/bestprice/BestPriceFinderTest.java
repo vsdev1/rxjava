@@ -24,6 +24,7 @@ import org.coding.reactive.rxjava.bestprice.model.Shop;
 import org.coding.reactive.rxjava.bestprice.service.NotFoundException;
 import org.coding.reactive.rxjava.common.Utils;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -36,7 +37,6 @@ import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
 
-@Ignore
 public class BestPriceFinderTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(BestPriceFinderTest.class);
@@ -70,8 +70,7 @@ public class BestPriceFinderTest {
         subscribePrint(discountedPriceObservable, "getDiscountedPriceNullable_nonExistingOfferIsNull()");
 
         List<Double> priceEvents = subscriber.getOnNextEvents();
-        assertThat(priceEvents.size(), is(equalTo(1)));
-        assertThat(priceEvents.get(0), is(nullValue()));
+        assertThat(priceEvents, is(empty()));
     }
 
     @Test
@@ -101,30 +100,39 @@ public class BestPriceFinderTest {
 
     @Test
     public void findOffers_allShops() throws Exception {
-        timedRun(() -> {
-            final List<Offer> offers = bestPriceFinder.findOffers("iPad", Currency.EUR);
-            LOG.info("*** Offers found ***\n{}", offers.stream().map(Offer::toString).collect(Collectors.joining("\n")));
-            assertPricesMatch(offers, Arrays.asList(400.0, 365.62, 79.45, 387.78, 631.52), Currency.EUR);
-        });
+        Observable<Offer> offersObservable = bestPriceFinder.findOffers("iPad", Currency.EUR);
+        TestSubscriber<Offer> subscriber = new TestSubscriber<>();
+        offersObservable.subscribe(subscriber);
+
+        subscribePrint(offersObservable, "findOffers_allShops()");
+
+        assertPricesMatch(subscriber, Arrays.asList(400.0, 365.62, 79.45, 387.78, 631.52), Currency.EUR);
     }
 
     @Test
     public void findOffers_someShops() throws Exception {
-        timedRun(() -> {
-            final List<Offer> offers = bestPriceFinder.findOffers("Samsung S6", Currency.EUR);
-            LOG.info("*** Offers found ***\n{}", offers.stream().map(Offer::toString).collect(Collectors.joining("\n")));
-            assertPricesMatch(offers, Arrays.asList(279.20, 517.04, 596.44), Currency.EUR);
-        });
+        Observable<Offer> offersObservable = bestPriceFinder.findOffers("Samsung S6", Currency.EUR);
+        TestSubscriber<Offer> subscriber = new TestSubscriber<>();
+        offersObservable.subscribe(subscriber);
+
+        subscribePrint(offersObservable, "findOffers_someShops()");
+
+        assertPricesMatch(subscriber, Arrays.asList(279.20, 517.04, 596.44), Currency.EUR);
     }
 
     @Test
     public void findOffers_noShops() throws Exception {
-        timedRun(() -> {
-            final List<Offer> offers = bestPriceFinder.findOffers("foobar", Currency.EUR);
-            assertThat(offers, is(empty()));
-        });
+        Observable<Offer> offersObservable = bestPriceFinder.findOffers("foobar", Currency.EUR);
+        TestSubscriber<Offer> subscriber = new TestSubscriber<>();
+        offersObservable.subscribe(subscriber);
+
+        subscribePrint(offersObservable, "findOffers_noShops()");
+
+        List<Offer> offers = subscriber.getOnNextEvents();
+        assertThat(offers, is(empty()));
     }
 
+    @Ignore
     @Test
     public void getAveragePriceNullable_existingOfferInAllShopsHasAvg() throws Exception {
         timedRun(() -> {
@@ -133,6 +141,7 @@ public class BestPriceFinderTest {
         });
     }
 
+    @Ignore
     @Test
     public void getAveragePriceNullable_existingOfferInSomeShopsHasAvg() throws Exception {
         timedRun(() -> {
@@ -141,6 +150,7 @@ public class BestPriceFinderTest {
         });
     }
 
+    @Ignore
     @Test
     public void getAveragePriceNullable_nonExistingOfferIsNull() throws Exception {
         timedRun(() -> {
@@ -164,11 +174,13 @@ public class BestPriceFinderTest {
         void run() throws Exception;
     }
 
-    private void assertPricesMatch(List<Offer> offers, List<Double> expectedPrices, Currency expectedCurrency) {
-        Assert.assertThat(offers.size(), is(expectedPrices.size()));
-        offers.forEach(o -> {
-            Assert.assertThat(o.getCurrency(), is(expectedCurrency));
-            Assert.assertThat(o.getPrice(), isIn(expectedPrices));
+    private void assertPricesMatch(TestSubscriber<Offer> subscriber, List<Double> expectedPrices, Currency expectedCurrency) {
+        List<Offer> offers = subscriber.getOnNextEvents();
+
+        assertThat(offers.size(), is(equalTo(expectedPrices.size())));
+        offers.forEach(offer -> {
+            assertThat(offer.getCurrency(), is(expectedCurrency));
+            assertThat(offer.getPrice(), isIn(expectedPrices));
         });
     }
 }
