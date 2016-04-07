@@ -21,6 +21,11 @@
         </dependency>
         <dependency>
             <groupId>io.reactivex</groupId>
+            <artifactId>rxjava-math</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex</groupId>
             <artifactId>rxapache-http</artifactId>
             <version>0.21.0</version>
         </dependency>

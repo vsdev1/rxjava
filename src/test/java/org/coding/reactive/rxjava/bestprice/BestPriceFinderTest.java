@@ -1,41 +1,27 @@
 package org.coding.reactive.rxjava.bestprice;
 
-import static java.time.Instant.now;
-import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isIn;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.hamcrest.number.IsCloseTo.closeTo;
-import static org.junit.Assert.assertThat;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.coding.reactive.rxjava.bestprice.model.Currency;
 import org.coding.reactive.rxjava.bestprice.model.Offer;
 import org.coding.reactive.rxjava.bestprice.model.Shop;
 import org.coding.reactive.rxjava.bestprice.service.NotFoundException;
-import org.coding.reactive.rxjava.common.Utils;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import rx.Observable;
 import rx.observers.TestSubscriber;
-import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.number.IsCloseTo.closeTo;
+import static org.junit.Assert.assertThat;
 
 public class BestPriceFinderTest {
 
@@ -56,21 +42,21 @@ public class BestPriceFinderTest {
 
         subscribePrint(discountedPriceObservable, "getDiscountedPriceNullable_existingOfferHasPrice()");
 
-        List<Double> priceEvents = subscriber.getOnNextEvents();
-        assertThat(priceEvents.size(), is(equalTo(1)));
-        assertThat(priceEvents.get(0), is(closeTo(1400.0, 0.001)));
+        List<Double> prices = subscriber.getOnNextEvents();
+        assertThat(prices.size(), is(equalTo(1)));
+        assertThat(prices.get(0), is(closeTo(1400.0, 0.01)));
     }
 
     @Test
-    public void getDiscountedPriceNullable_nonExistingOfferIsNull() throws Exception {
+    public void getDiscountedPriceNullable_nonExistingOfferIsEmptyObservable() throws Exception {
         Observable<Double> discountedPriceObservable = bestPriceFinder.getDiscountedPriceNullable(Shop.MY_FAVORITE_SHOP, "foobar");
         TestSubscriber<Double> subscriber = new TestSubscriber<>();
         discountedPriceObservable.subscribe(subscriber);
 
         subscribePrint(discountedPriceObservable, "getDiscountedPriceNullable_nonExistingOfferIsNull()");
 
-        List<Double> priceEvents = subscriber.getOnNextEvents();
-        assertThat(priceEvents, is(empty()));
+        List<Double> prices = subscriber.getOnNextEvents();
+        assertThat(prices, is(empty()));
     }
 
     @Test
@@ -81,9 +67,9 @@ public class BestPriceFinderTest {
 
         subscribePrint(discountedPriceObservable, "getDiscountedPriceWithException_existingOfferHasPrice()");
 
-        List<Double> priceEvents = subscriber.getOnNextEvents();
-        assertThat(priceEvents.size(), is(equalTo(1)));
-        assertThat(priceEvents.get(0), is(closeTo(320.0, 0.001)));
+        List<Double> prices = subscriber.getOnNextEvents();
+        assertThat(prices.size(), is(equalTo(1)));
+        assertThat(prices.get(0), is(closeTo(320.0, 0.01)));
     }
 
 
@@ -132,46 +118,42 @@ public class BestPriceFinderTest {
         assertThat(offers, is(empty()));
     }
 
-    @Ignore
     @Test
     public void getAveragePriceNullable_existingOfferInAllShopsHasAvg() throws Exception {
-        timedRun(() -> {
-            final Double price = bestPriceFinder.getAveragePriceNullable("iPad", Currency.USD);
-            assertThat(price, is(closeTo(504.82, 0.001)));
-        });
+        Observable<Double> averagePriceObservable = bestPriceFinder.getAveragePriceNullable("iPad", Currency.USD);
+        TestSubscriber<Double> subscriber = new TestSubscriber();
+        averagePriceObservable.subscribe(subscriber);
+
+        subscribePrint(averagePriceObservable, "getAveragePriceNullable_existingOfferInAllShopsHasAvg()");
+
+        List<Double> averagePrices = subscriber.getOnNextEvents();
+        assertThat(averagePrices.size(), is(equalTo(1)));
+        assertThat(averagePrices.get(0), is(closeTo(504.82, 0.01)));
     }
 
-    @Ignore
     @Test
     public void getAveragePriceNullable_existingOfferInSomeShopsHasAvg() throws Exception {
-        timedRun(() -> {
-            final Double price = bestPriceFinder.getAveragePriceNullable("Samsung S6", Currency.USD);
-            assertThat(price, is(closeTo(628.50, 0.001)));
-        });
+        Observable<Double> averagePriceObservable = bestPriceFinder.getAveragePriceNullable("Samsung S6", Currency.USD);
+        TestSubscriber<Double> subscriber = new TestSubscriber();
+        averagePriceObservable.subscribe(subscriber);
+
+        subscribePrint(averagePriceObservable, "getAveragePriceNullable_existingOfferInSomeShopsHasAvg()");
+
+        List<Double> averagePrices = subscriber.getOnNextEvents();
+        assertThat(averagePrices.size(), is(equalTo(1)));
+        assertThat(averagePrices.get(0), is(closeTo(628.50, 0.01)));
     }
 
-    @Ignore
     @Test
-    public void getAveragePriceNullable_nonExistingOfferIsNull() throws Exception {
-        timedRun(() -> {
-            final Double price = bestPriceFinder.getAveragePriceNullable("foobar", Currency.USD);
-            assertThat(price, is(nullValue()));
-        });
-    }
+    public void getAveragePriceNullable_nonExistingOfferIsEmptyObservable() throws Exception {
+        Observable<Double> averagePriceObservable = bestPriceFinder.getAveragePriceNullable("foobar", Currency.USD);
+        TestSubscriber<Double> subscriber = new TestSubscriber();
+        averagePriceObservable.subscribe(subscriber);
 
-    private void timedRun(RunnableWithException test) throws Exception {
-        MDC.put("impl", bestPriceFinder.getClass().getSimpleName());
-        Instant start = now();
-        try {
-            test.run();
-        } finally {
-            LOG.info("Test took {}ms", ChronoUnit.MILLIS.between(start, now()));
-        }
-        MDC.remove("impl");
-    }
+        subscribePrint(averagePriceObservable, "getAveragePriceNullable_nonExistingOfferIsNull()");
 
-    public interface RunnableWithException {
-        void run() throws Exception;
+        List<Double> averagePrices = subscriber.getOnNextEvents();
+        assertThat(averagePrices, is(empty()));
     }
 
     private void assertPricesMatch(TestSubscriber<Offer> subscriber, List<Double> expectedPrices, Currency expectedCurrency) {

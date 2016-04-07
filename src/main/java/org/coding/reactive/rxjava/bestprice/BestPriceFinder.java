@@ -7,9 +7,7 @@ import org.coding.reactive.rxjava.bestprice.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import rx.observables.MathObservable;
 
 public class BestPriceFinder {
 
@@ -54,7 +52,8 @@ public class BestPriceFinder {
      *            product name
      * @param targetCurrency
      *            target currency
-     * @return list of offers with discounted prices in target currency
+     * @return observable of offers with discounted prices in target currency
+     *          or an empty observable if no offer was found for the product
      */
     public Observable<Offer> findOffers(String product, Currency targetCurrency) {
         return Observable.from(Shop.SHOPS)
@@ -63,10 +62,26 @@ public class BestPriceFinder {
 //        return Observable.empty();
     }
 
+    /**
+     * @param product
+     *            product name
+     * @param targetCurrency
+     *            target currency
+     * @return average discounted price for the product in target currency
+     *          or an empty observable if no offer was found for the product
+     */
+    public Observable<Double> getAveragePriceNullable(String product, Currency targetCurrency) {
+        Observable<Double> offerPricesObservable = findOffers(product, targetCurrency)
+                .map(offer -> offer.getPrice());
+
+        return MathObservable.averageDouble(offerPricesObservable);
+//        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
+//        return 0.0;
+    }
+
     private Observable<Offer> getOfferWithExchangeRatePrice(String product, Shop shop, Currency targetCurrency) {
         Observable<Offer> offerObservable = OfferService.getOfferNullable(shop, product)
                 .filter(offer -> offer != null)
-                .defaultIfEmpty(null)
                 .flatMap(DiscountService::applyDiscount);
 
         Observable<Double> exchangeRateObservable = ExchangeRateService.getRate(shop.getCurrency(), targetCurrency);
@@ -74,23 +89,5 @@ public class BestPriceFinder {
         return Observable.combineLatest(offerObservable, exchangeRateObservable,
                 (offer, exchangeRate) ->
                         offer.withNewPriceAndCurrency(Util.roundTo2DecimalPlaces(offer.getPrice() * exchangeRate), targetCurrency));
-    }
-
-    public static void main(String[] args) throws Exception {
-        new BestPriceFinder().findOffers("Samsung S6", Currency.EUR);
-    }
-
-    /**
-     * @param product
-     *            product name
-     * @param targetCurrency
-     *            target currency
-     * @return average discounted price for the product in USD.
-     * @throws Exception
-     *             when interrupted waiting for/retrieving async results or on async exceptions
-     */
-    public Double getAveragePriceNullable(String product, Currency targetCurrency) throws Exception {
-        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        return 0.0;
     }
 }
