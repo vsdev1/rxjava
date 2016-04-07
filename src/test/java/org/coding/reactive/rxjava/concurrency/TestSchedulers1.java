@@ -1,4 +1,4 @@
-package org.coding.reactive.rxjava.creation.concurrency;
+package org.coding.reactive.rxjava.concurrency;
 
 import org.junit.Test;
 
