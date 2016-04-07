@@ -1,4 +1,4 @@
-package org.coding.reactive.rxjava.scheduler;
+package org.coding.reactive.rxjava.concurrency;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
