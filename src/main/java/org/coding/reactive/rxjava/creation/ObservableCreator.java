@@ -20,27 +20,27 @@ import rx.apache.http.ObservableHttp;
 public class ObservableCreator {
 
     public Observable<Character> createJustObservable() {
-        // TODO: create observable from multiple single values
+        // create observable from multiple single values
         return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
     }
 
     public Observable<String> createObservableFromList() {
-        // TODO: create observable from list
+        // create observable from list
         return Observable.from(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     public Observable<Integer> createObservableFromArray() {
-        // TODO: create observable from array
+        // create observable from array
         return Observable.from(new Integer[] {3, 5, 8});
     }
 
     public Observable<Integer> createObservableFromStream() {
-        // TODO: create observable from stream
+        // create observable from stream
         return createObservableFromStream(Stream.of(3, 5, 8));
     }
 
     public Observable<Path> createObservableFromIterableDirectoryStream() throws IOException {
-        // TODO: create observable from that emits all files in src/main/resources
+        // create observable from that emits all files in src/main/resources
         Path resources = Paths.get("src", "main", "resources");
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resources);
 
@@ -48,23 +48,22 @@ public class ObservableCreator {
     }
 
     public Observable<Long> createObservableWithIntervalOperator(Scheduler scheduler) throws IOException {
-        // TODO: create observable from interval
+        // create observable from interval
         return Observable.interval(100L, TimeUnit.MILLISECONDS, scheduler);
     }
 
     public Observable<Integer> createRangeObservable() {
-        // TODO: create observable from range
-//        return Observable.empty();
+        // create observable from range
         return Observable.range(5, 10);
     }
 
     public Observable<String> createObservableWithCreateOperator() throws IOException {
-        // TODO: create observable from list with Observable.create()
+        // create observable from list with Observable.create()
         return createObservableFromIterableWithCreateOperator(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     public Observable<String> createHttpGetObservable(String url) throws IOException {
-        // TODO (advanced stuff): create observable that gets remote URL via http.
+        // advanced stuff: create observable that gets remote URL via http.
         // use https://github.com/ReactiveX/RxApacheHttp
         CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
         client.start();

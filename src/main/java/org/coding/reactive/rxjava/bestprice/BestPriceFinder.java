@@ -26,8 +26,6 @@ public class BestPriceFinder {
                .filter(offer -> offer != null)
                .flatMap(DiscountService::applyDiscount)
                .map(Offer::getPrice);
-//          // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        return Observable.empty();
     }
 
     /**
@@ -43,8 +41,6 @@ public class BestPriceFinder {
         return OfferService.getOfferWithException(shop, product)
                 .flatMap(DiscountService::applyDiscount)
                 .map(Offer::getPrice);
-//        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        return Observable.empty();
     }
 
     /**
@@ -58,8 +54,6 @@ public class BestPriceFinder {
     public Observable<Offer> findOffers(String product, Currency targetCurrency) {
         return Observable.from(Shop.SHOPS)
                 .flatMap(shop -> getOfferWithExchangeRatePrice(product, shop, targetCurrency));
-        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        return Observable.empty();
     }
 
     /**
@@ -75,8 +69,6 @@ public class BestPriceFinder {
                 .map(offer -> offer.getPrice());
 
         return MathObservable.averageDouble(offerPricesObservable);
-//        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        return 0.0;
     }
 
     private Observable<Offer> getOfferWithExchangeRatePrice(String product, Shop shop, Currency targetCurrency) {
