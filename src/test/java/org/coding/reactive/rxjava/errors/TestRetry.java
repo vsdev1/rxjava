@@ -11,10 +11,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestRetry {
 
+    //Basic retry, try it out and then try the overloaded versions of retry.
     @Test
     public void testRetry() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(10);
-        Observable.interval(10, TimeUnit.MILLISECONDS)
+        Observable.interval(5, TimeUnit.MILLISECONDS)
                 .map(input -> {
                     if (Math.random() < .5) {
                         throw new RuntimeException();
@@ -32,18 +33,37 @@ public class TestRetry {
         latch.await();
     }
 
+
+
+    //Pretty advanced retry...
+    //This retries 3 times, each time incrementing the number of seconds it waits.
+    //When you understand the code, try to modify it to only retry a specific type of Exception n number of times every second.
     @Test
-    public void testRetryWhen() {
-        Observable.just("Hello Observable error!")
-                .flatMap(this::throwingMethod)
-                .onErrorResumeNext(e -> Observable.just("Got an error, returning this observable instead..."))
+    public void testRetryWhen() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        Observable.interval(10, TimeUnit.MILLISECONDS)
+                .map(input -> {
+                    if (Math.random() < 1) {
+                        throw new RuntimeException();
+                    }
+                    return input;
+                })
+                .subscribeOn(Schedulers.newThread())
+                .retryWhen(attempts -> attempts.zipWith(
+                        Observable.range(1,3), (attempt, errCount) -> errCount)
+                            .flatMap(errCount -> {
+                                System.out.println("Delay retry by " +errCount + " seconds");
+                                return Observable.timer(errCount, TimeUnit.SECONDS);
+                        }))
                 .subscribe(
-                        (i) -> System.out.println("Subscriber onNext: " + i),
-                        (e) -> System.err.println("Subscriber onError: " + e),
-                        () -> System.out.println("Subscriber onComplete"));
+                        System.out::println,
+                        e -> System.err.println(e),
+                        () -> latch.countDown()); //release the latch onComplete
+        latch.await();
     }
 
-    private Observable throwingMethod(String input) {
-        throw new RuntimeException("Throwing while handling '" + input + "'");
+    @Test
+    public void testRetryWhenWithSpecificException() {
+
     }
 }
