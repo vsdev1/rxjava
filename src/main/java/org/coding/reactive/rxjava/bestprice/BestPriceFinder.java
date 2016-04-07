@@ -1,12 +1,15 @@
 package org.coding.reactive.rxjava.bestprice;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
+import org.coding.reactive.rxjava.bestprice.service.NotFoundException;
 import org.coding.reactive.rxjava.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +21,8 @@ import org.coding.reactive.rxjava.bestprice.service.DiscountService;
 import org.coding.reactive.rxjava.bestprice.service.ExchangeRateService;
 import org.coding.reactive.rxjava.bestprice.service.OfferService;
 import rx.Observable;
+import rx.Subscription;
+import rx.observables.BlockingObservable;
 
 public class BestPriceFinder {
 
@@ -39,7 +44,8 @@ public class BestPriceFinder {
                 .filter(offer -> offer != null)
                 .flatMap(DiscountService::applyDiscount);
 
-        return Optional.ofNullable(offerObservable.toBlocking().single()).map(Offer::getPrice).orElse(null);
+        final BlockingObservable<Offer> offerBlockingObservable = offerObservable.toBlocking();
+        return Optional.ofNullable(offerBlockingObservable.singleOrDefault(null)).map(Offer::getPrice).orElse(null);
           // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
 //        return 0.0;
     }
@@ -56,6 +62,13 @@ public class BestPriceFinder {
      *             when interrupted waiting for/retrieving async results or on async exceptions
      */
     public Double getDiscountedPriceWithException(Shop shop, String product) throws InterruptedException, ExecutionException {
+        final Double discountedPrice;
+        final Subscription subscribe = OfferService.getOfferNullable(shop, product)
+                .subscribe((offer) -> {
+                    if (offer == null) {
+                        throw new NotFoundException("offer not found");
+                    }
+                }, (e) -> System.err.println(e), () -> System.out.println("ended!"));
         // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
         return 0.0;
     }
