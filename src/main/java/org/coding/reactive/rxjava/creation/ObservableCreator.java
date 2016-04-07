@@ -65,7 +65,7 @@ public class ObservableCreator {
 
     public Observable<String> createHttpGetObservable(String url) throws IOException {
         // TODO (advanced stuff): create observable that gets remote URL via http.
-        // hint: use ObservableHttp
+        // use https://github.com/ReactiveX/RxApacheHttp
         CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
         client.start();
 
