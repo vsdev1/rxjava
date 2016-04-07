@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
 
 public class Creation {
+
+    // examples for observable creation
     public static void main(String[] args) {
         subscribePrint(Observable.interval(500L, TimeUnit.MILLISECONDS),
                 "Interval Observable");

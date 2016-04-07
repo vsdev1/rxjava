@@ -20,22 +20,27 @@ import rx.apache.http.ObservableHttp;
 public class ObservableCreator {
 
     public Observable<Character> createJustObservable() {
+        // TODO: create observable from different single values
         return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
     }
 
     public Observable<String> createObservableFromList() {
+        // TODO: create observable from list
         return Observable.from(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     public Observable<Integer> createObservableFromArray() {
+        // TODO: create observable from array
         return Observable.from(new Integer[] {3, 5, 8});
     }
 
     public Observable<Integer> createObservableFromStream() {
+        // TODO: create observable from stream
         return createObservableFromStream(Stream.of(3, 5, 8));
     }
 
     public Observable<Path> createObservableFromIterableDirectoryStream() throws IOException {
+        // TODO: create observable from that emits all files in src/main/resources
         Path resources = Paths.get("src", "main", "resources");
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resources);
 
@@ -43,19 +48,24 @@ public class ObservableCreator {
     }
 
     public Observable<Long> createObservableWithIntervalOperator(Scheduler scheduler) throws IOException {
+        // TODO: create observable from interval
         return Observable.interval(100L, TimeUnit.MILLISECONDS, scheduler);
     }
 
     public Observable<Integer> createRangeObservable() {
+        // TODO: create observable from range
 //        return Observable.empty();
         return Observable.range(5, 10);
     }
 
     public Observable<String> createObservableWithCreateOperator() throws IOException {
+        // TODO: create observable from list with Observable.create()
         return createObservableFromIterableWithCreateOperator(Arrays.asList("blue", "red", "green", "yellow", "orange", "cyan", "purple"));
     }
 
     public Observable<String> createHttpGetObservable(String url) throws IOException {
+        // TODO (advanced stuff): create observable that gets remote URL via http.
+        // hint: use ObservableHttp
         CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
         client.start();
 

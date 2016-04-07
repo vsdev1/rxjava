@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 public class FlowControl {
 
     public Observable<List<Integer>> createObservableWithBufferByCount() {
+        // TODO: create observable from a range that buffers items
         return Observable.range(0, 10).buffer(4);
     }
 
