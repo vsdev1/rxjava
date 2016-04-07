@@ -21,8 +21,7 @@ public class ReactiveSum {
     }
 
     /**
-     * TODO:
-     * To implement:
+     * Calculates the reactive sum of 2 numbers.
      * <ul>
      * <li>Runs in the terminal.</li>
      * <li>Once started, it will run until the user enters exit.</li>
@@ -49,21 +48,6 @@ public class ReactiveSum {
         }
     }
 
-    /**
-     * Gets the the value of &lt;number&gt; of the input &lt;varName:&gt;&lt;number&gt;.
-     */
-    private Observable<Double> varStream(final String varName, Observable<String> input) {
-        final Pattern pattern = Pattern.compile("\\s*" + varName
-                + "\\s*[:|=]\\s*(-?\\d+\\.?\\d*)");
-
-        return input
-                .map(pattern::matcher)
-                .filter(matcher -> matcher.matches()
-                        && matcher.group(1) != null)
-                .map(matcher -> matcher.group(1))
-                .map(Double::parseDouble);
-    }
-
     private void reactiveSum(Observable<Double> a, Observable<Double> b) {
         Observable
                 .combineLatest(a.startWith(0.0), b.startWith(0.0), (x, y) -> x + y)
@@ -78,6 +62,21 @@ public class ReactiveSum {
                             latch.countDown();
                         });
 
+    }
+
+    /**
+     * Gets the the value of &lt;number&gt; of the input &lt;varName:&gt;&lt;number&gt;.
+     */
+    private Observable<Double> varStream(final String varName, Observable<String> input) {
+        final Pattern pattern = Pattern.compile("\\s*" + varName
+                + "\\s*[:|=]\\s*(-?\\d+\\.?\\d*)");
+
+        return input
+                .map(pattern::matcher)
+                .filter(matcher -> matcher.matches()
+                        && matcher.group(1) != null)
+                .map(matcher -> matcher.group(1))
+                .map(Double::parseDouble);
     }
 
     private ConnectableObservable<String> from(final InputStream stream) {
