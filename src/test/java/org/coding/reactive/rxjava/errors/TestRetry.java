@@ -2,6 +2,7 @@ package org.coding.reactive.rxjava.errors;
 
 import org.junit.Test;
 import rx.Observable;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 import java.util.concurrent.CountDownLatch;
@@ -62,8 +63,40 @@ public class TestRetry {
         latch.await();
     }
 
-    @Test
-    public void testRetryWhenWithSpecificException() {
 
+    //This retry goes on forever
+    @Test
+    public void testRetryWhenForever() throws InterruptedException {
+        Observable.interval(100, TimeUnit.MILLISECONDS)
+                .map(input -> {throw new RuntimeException();})
+                .retryWhen(errorNotification ->
+                        errorNotification.flatMap((Func1<Throwable, Observable<?>>) throwable -> {
+                            System.out.println("Delay retry by 1 second");
+                            return Observable.timer(1, TimeUnit.SECONDS);
+                        }))
+                .subscribe(
+                        System.out::println,
+                        e -> System.err.println(e)
+                );
+
+        Thread.sleep(5000);
+    }
+
+    //This retry goes on forever, make it retry only n number of times (using retryWhen).
+    //If you have time, enhance even further, by also propagating the exception.
+    //@Test
+    public void testRetryWhenNTimes() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        Observable.interval(100, TimeUnit.MILLISECONDS)
+                .map(input -> {throw new RuntimeException();})
+                .retryWhen(errorNotification ->
+                        errorNotification.flatMap((Func1<Throwable, Observable<?>>) throwable -> Observable.timer(1, TimeUnit.SECONDS)))
+                .subscribe(
+                        System.out::println,
+                        e -> System.err.println(e),
+                        () -> latch.countDown()
+                );
+
+        latch.await();
     }
 }
