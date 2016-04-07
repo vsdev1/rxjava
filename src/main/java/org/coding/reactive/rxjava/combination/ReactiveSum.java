@@ -1,16 +1,15 @@
 package org.coding.reactive.rxjava.combination;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.observables.ConnectableObservable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
-
-import rx.Observable;
-import rx.Subscriber;
-import rx.observables.ConnectableObservable;
-import rx.schedulers.Schedulers;
 
 public class ReactiveSum {
 
@@ -48,20 +47,9 @@ public class ReactiveSum {
         }
     }
 
+    // TODO: implement (currently only typing 'exit' works)
     private void reactiveSum(Observable<Double> a, Observable<Double> b) {
-        Observable
-                .combineLatest(a.startWith(0.0), b.startWith(0.0), (x, y) -> x + y)
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        sum -> System.out.println("update : a + b = " + sum),
-                        error -> {
-                            System.out.println("Got an error!");
-                            error.printStackTrace();
-                        }, () -> {
-                            System.out.println("Exiting...");
-                            latch.countDown();
-                        });
-
+        latch.countDown();
     }
 
     /**
