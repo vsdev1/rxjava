@@ -1,6 +1,10 @@
 package org.coding.reactive.rxjava.bestprice;
 
 import static java.time.Instant.now;
+import static org.coding.reactive.rxjava.common.Utils.subscribePrint;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.core.Is.is;
@@ -18,6 +22,8 @@ import org.coding.reactive.rxjava.bestprice.model.Currency;
 import org.coding.reactive.rxjava.bestprice.model.Offer;
 import org.coding.reactive.rxjava.bestprice.model.Shop;
 import org.coding.reactive.rxjava.bestprice.service.NotFoundException;
+import org.coding.reactive.rxjava.common.Utils;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -25,6 +31,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import rx.Observable;
+import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 
 @Ignore
 public class BestPriceFinderTest {
@@ -40,33 +50,53 @@ public class BestPriceFinderTest {
 
     @Test
     public void getDiscountedPriceNullable_existingOfferHasPrice() throws Exception {
-        timedRun(() -> {
-            final Double price = bestPriceFinder.getDiscountedPriceNullable(Shop.MY_FAVORITE_SHOP, "iPad");
-            assertThat(price, is(closeTo(1400.0, 0.001)));
-        });
+        Observable<Double> discountedPriceObservable = bestPriceFinder.getDiscountedPriceNullable(Shop.MY_FAVORITE_SHOP, "iPad");
+        TestSubscriber<Double> subscriber = new TestSubscriber<>();
+        discountedPriceObservable.subscribe(subscriber);
+
+        subscribePrint(discountedPriceObservable, "getDiscountedPriceNullable_existingOfferHasPrice()");
+
+        List<Double> priceEvents = subscriber.getOnNextEvents();
+        assertThat(priceEvents.size(), is(equalTo(1)));
+        assertThat(priceEvents.get(0), is(closeTo(1400.0, 0.001)));
     }
 
     @Test
     public void getDiscountedPriceNullable_nonExistingOfferIsNull() throws Exception {
-        timedRun(() -> {
-            final Double price = bestPriceFinder.getDiscountedPriceNullable(Shop.MY_FAVORITE_SHOP, "foobar");
-            assertThat(price, is(nullValue()));
-        });
+        Observable<Double> discountedPriceObservable = bestPriceFinder.getDiscountedPriceNullable(Shop.MY_FAVORITE_SHOP, "foobar");
+        TestSubscriber<Double> subscriber = new TestSubscriber<>();
+        discountedPriceObservable.subscribe(subscriber);
+
+        subscribePrint(discountedPriceObservable, "getDiscountedPriceNullable_nonExistingOfferIsNull()");
+
+        List<Double> priceEvents = subscriber.getOnNextEvents();
+        assertThat(priceEvents.size(), is(equalTo(1)));
+        assertThat(priceEvents.get(0), is(nullValue()));
     }
 
     @Test
     public void getDiscountedPriceWithException_existingOfferHasPrice() throws Exception {
-        timedRun(() -> {
-            // don't worry about currencies here ;)
-            final Double price = bestPriceFinder.getDiscountedPriceWithException(Shop.SHOP_BEST_PRICE, "Nexus 6");
-            assertThat(price, is(closeTo(320.0, 0.001)));
-        });
+        Observable<Double> discountedPriceObservable = bestPriceFinder.getDiscountedPriceWithException(Shop.SHOP_BEST_PRICE, "Nexus 6");
+        TestSubscriber<Double> subscriber = new TestSubscriber<>();
+        discountedPriceObservable.subscribe(subscriber);
+
+        subscribePrint(discountedPriceObservable, "getDiscountedPriceWithException_existingOfferHasPrice()");
+
+        List<Double> priceEvents = subscriber.getOnNextEvents();
+        assertThat(priceEvents.size(), is(equalTo(1)));
+        assertThat(priceEvents.get(0), is(closeTo(320.0, 0.001)));
     }
 
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getDiscountedPriceWithException_nonExistingOfferIsException() throws Exception {
-        timedRun(() -> bestPriceFinder.getDiscountedPriceWithException(Shop.MY_FAVORITE_SHOP, "foobar"));
+        Observable<Double> discountedPriceObservable = bestPriceFinder.getDiscountedPriceWithException(Shop.MY_FAVORITE_SHOP, "foobar");
+        TestSubscriber<Double> subscriber = new TestSubscriber<>();
+        discountedPriceObservable.subscribe(subscriber);
+
+        subscribePrint(discountedPriceObservable, "getDiscountedPriceWithException_nonExistingOfferIsException()");
+
+        assertThat(subscriber.getOnErrorEvents().get(0), instanceOf(NotFoundException.class));
     }
 
     @Test

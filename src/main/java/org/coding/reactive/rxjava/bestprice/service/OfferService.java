@@ -65,8 +65,9 @@ public class OfferService {
         Util.delay(SERVICE_DELAY_MS);
         Offer offer = offerStore.get(shop.getName()).get(productName);
         if (offer == null) {
-            throw new NotFoundException("No offer for shop " + shop + " and product '" + productName + "'");
+            return Observable.error(new NotFoundException("No offer for shop " + shop + " and product '" + productName + "'"));
         }
+
         return Observable.just(offer);
     }
 

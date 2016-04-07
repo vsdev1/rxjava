@@ -23,6 +23,9 @@ import org.coding.reactive.rxjava.bestprice.service.OfferService;
 import rx.Observable;
 import rx.Subscription;
 import rx.observables.BlockingObservable;
+import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 
 public class BestPriceFinder {
 
@@ -39,15 +42,14 @@ public class BestPriceFinder {
      * @throws Exception
      *             when interrupted waiting for/retrieving async results or on async exceptions
      */
-    public Double getDiscountedPriceNullable(final Shop shop, final String product) throws InterruptedException, ExecutionException {
-        final Observable<Offer> offerObservable = OfferService.getOfferNullable(shop, product)
+    public Observable<Double> getDiscountedPriceNullable(final Shop shop, final String product) throws InterruptedException, ExecutionException {
+         return OfferService.getOfferNullable(shop, product)
                 .filter(offer -> offer != null)
-                .flatMap(DiscountService::applyDiscount);
-
-        final BlockingObservable<Offer> offerBlockingObservable = offerObservable.toBlocking();
-        return Optional.ofNullable(offerBlockingObservable.singleOrDefault(null)).map(Offer::getPrice).orElse(null);
-          // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-//        return 0.0;
+                .defaultIfEmpty(null)
+                .flatMap(DiscountService::applyDiscount)
+                .map(Offer::getPrice);
+//          // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
+//        return Observable.empty();
     }
 
     /**
@@ -57,20 +59,16 @@ public class BestPriceFinder {
      *            product name
      * @return discounted price for product offered by shop or fallback, in shop's currency
      * @throws NotFoundException
-     *             if no offer for product in any shop
+     *             if no offer for product in the shop
      * @throws Exception
      *             when interrupted waiting for/retrieving async results or on async exceptions
      */
-    public Double getDiscountedPriceWithException(Shop shop, String product) throws InterruptedException, ExecutionException {
-        final Double discountedPrice;
-        final Subscription subscribe = OfferService.getOfferNullable(shop, product)
-                .subscribe((offer) -> {
-                    if (offer == null) {
-                        throw new NotFoundException("offer not found");
-                    }
-                }, (e) -> System.err.println(e), () -> System.out.println("ended!"));
-        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
-        return 0.0;
+    public Observable<Double> getDiscountedPriceWithException(Shop shop, String product) throws InterruptedException, ExecutionException {
+        return OfferService.getOfferWithException(shop, product)
+                .flatMap(DiscountService::applyDiscount)
+                .map(Offer::getPrice);
+//        // TODO: TO BE IMPLEMENTED AS CODING DAY EXERCISE
+//        return Observable.empty();
     }
 
     /**
