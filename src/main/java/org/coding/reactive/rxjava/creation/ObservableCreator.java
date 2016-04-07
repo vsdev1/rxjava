@@ -20,7 +20,7 @@ import rx.apache.http.ObservableHttp;
 public class ObservableCreator {
 
     public Observable<Character> createJustObservable() {
-        // TODO: create observable from different single values
+        // TODO: create observable from multiple single values
         return Observable.just('R', 'x', 'J', 'a', 'v', 'a');
     }
 
