@@ -1,0 +1,6 @@
+language: java
+
+# configure notifications (email, IRC, campfire etc)
+#notifications:
+#  email: 
+#    - vsommerfeld@gmail.com
