@@ -2,6 +2,10 @@ language: java
 
 jdk:
   - oraclejdk8
+  
+branches:
+  only:
+  - solutions
 
 # configure notifications (email, IRC, campfire etc)
 #notifications:
